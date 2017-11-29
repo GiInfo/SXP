@@ -129,21 +129,24 @@ public class Contracts {
 		return ret;
 	}
 
+	private HashMap<String,String> getParties(ArrayList<String> parties){
+        HashMap<String,String> partiesNames = new HashMap<String, String>();
+        if (parties != null){
+            JsonTools<User> json3 = new JsonTools<>(new TypeReference<User>(){});
+            Users us = new Users();
+            for (String id : parties){
+                User u = json3.toEntity(us.get(id));
+                partiesNames.put(id, u.getNick());
+            }
+        }
+        return partiesNames;
+    }
 	@PUT
 	@Path("/{id}")
-
 	public String edit(ContractEntity c, @HeaderParam(Authentifier.PARAM_NAME) String token) {
 
 		ArrayList<String> parties = c.getParties();
-		HashMap<String,String> partiesNames = new HashMap<String, String>();
-		if (parties != null){
-			JsonTools<User> json3 = new JsonTools<>(new TypeReference<User>(){});
-			Users us = new Users();
-			for (String id : parties){
-				User u = json3.toEntity(us.get(id));
-				partiesNames.put(id, u.getNick());
-			}
-		}
+		HashMap<String,String> partiesNames = getParties(parties);
 
 		SyncManager<ContractEntity> em = new ContractSyncManagerImpl();
 
@@ -265,16 +268,7 @@ public class Contracts {
         em.begin();
         ContractEntity c = em.findOneById(id);
         ArrayList<String> parties = c.getParties();
-        HashMap<String, String> partiesNames = new HashMap<String, String>();
-        if (parties != null) {
-            JsonTools<User> json3 = new JsonTools<>(new TypeReference<User>() {
-            });
-            Users us = new Users();
-            for (String id1 : parties) {
-                User u = json3.toEntity(us.get(id1));
-                partiesNames.put(id1, u.getNick());
-            }
-        }
+        HashMap<String, String> partiesNames =getParties(parties);
         HashMap<String, Wish> wishes = c.getpartiesWish();
         wishes.put(currentUser.getNick(), aWish);
         Collection<ContractEntity> contracts = em.findAllByAttribute("title", c.getTitle());
