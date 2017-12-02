@@ -7,7 +7,7 @@
             .state('messages', {
                 url: '/messages',
                 templateUrl: 'messages.html',
-                controller: function ($rootScope, $scope, $state, $stateParams, Message, User, $http, Oboe,$document) {
+                controller: function ($rootScope, $scope, $state, $stateParams, Message, User, $http, Oboe) {
                     isUserConnected($http, $rootScope, $scope, $state, User);
                     $scope.app.configHeader({contextButton: 'addMessage', title: 'Messages'});
                     $scope.privateIsClicked = true;
@@ -218,9 +218,53 @@
                 templateUrl: 'newMessage.html',
                 controller: function ($rootScope, $scope, $state, $stateParams, Message, User, $http, Oboe) {
                     isUserConnected($http, $rootScope, $scope, $state, User);
-                    $scope.findAll = function(query){
-                        return $http.get(RESTAPISERVER+'/api/users/');
-                    }
+                    $scope.userAutoComplete = function() {
+                        $scope.results = [];
+                        $scope.errorSearch = false;
+                        $scope.searchUser = true;
+                        $scope.hideAfterSelected = true;
+                        $scope.errorFields = false;
+                        $scope.receiverId = null;
+                        $scope.receiverPbkey = null;
+
+                        if ($scope.stream != null) {
+                            $scope.stream.abort();
+                        }
+                        Oboe(
+                            {
+                                url: RESTAPISERVER + "/api/search/users?nick=" + $scope.receiverName,
+                                pattern: '!',
+                                start: function(stream) {
+                                    // handle to the stream
+                                    $scope.stream = stream;
+                                    $scope.status = 'started';
+                                },
+                                done: function(parsedJSON) {
+                                    $scope.status = 'done';
+                                }
+                            }).then(function() {
+                            // promise is resolved
+                        }, function(error) {
+                            // handle errors
+                        }, function(node) { //A node is just a partial list of matches from the streamed search
+                            // node received
+                            if (node != null && node.length != 0) { // if not empty
+
+                                for (var i = 0; i < node.length; i++) { // push it to results
+                                    console.log(node[i]);
+                                    $scope.pushResult(node[i]);
+                                }
+                            }
+
+                            $scope.searchUser = false;
+                            console.log($scope.results.length);
+                            if($scope.results.length == 0)
+                                $scope.errorSearch = true;
+                            else
+                                $scope.errorSearch = false;
+
+                        });
+                    };
                     $scope.app.configHeader({contextButton: '', title: 'New message', back: 'yes'});
                     $scope.action = 'add'; //Specify to the template we are adding a message, since it the same template as the one for editing.
 

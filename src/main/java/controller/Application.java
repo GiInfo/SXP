@@ -19,7 +19,7 @@ import rest.factories.RestServerFactory;
 public class Application {
     public final static int jxtaPort = 9800;
     public final static int restPort = 8081;
-    public final static String[] rdvPeerIds = {"tcp://145.239.76.112:9800", "tcp://localhost:9800"};
+    public final static String[] rdvPeerIds = {"tcp://192.168.0.11:9801", "tcp://localhost:9800"};
 
     private static Application instance = null;
     private static UserSyncManagerImpl umg;
