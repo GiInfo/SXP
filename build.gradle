@@ -2,7 +2,20 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
 apply plugin: 'application'
-apply plugin: 'jetty'
+//apply plugin: 'jetty'
+apply plugin: 'war'
+apply plugin: 'org.akhikhl.gretty'
+
+buildscript {
+  repositories {
+    jcenter()
+  }
+
+  dependencies {
+    classpath 'org.akhikhl.gretty:gretty:1.4.0'
+  }
+}
+
 apply plugin: 'jacoco'
 jacoco {
     toolVersion = "0.7.7.201606060606" //checked at http://www.eclemma.org/jacoco/
