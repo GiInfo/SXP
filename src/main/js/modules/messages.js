@@ -67,7 +67,7 @@
                     }
 
                     $scope.addMessage = function (chatName, chatId, messageContent) {
-                        if (messageContent) {
+                        if (messageContent && !$scope.privateIsClicked) {
                             $scope.searchMessages = true;
                             //Message is available thanks to restApi.js
                             var message = new Message({
@@ -108,18 +108,73 @@
                                     $scope.searchMessages = false;
                                 }
                             });
+                        }else if(messageContent && $scope.privateIsClicked){
+                        	
+                            $scope.searchMessages = true;
+                            //Message is available thanks to restApi.js
+                            alert(chatId);
+                            alert(chatName);
+                            var revs =[];
+                            revs.push(chatId);
+//                            alert(chatId.details.receiverName);
+                            var message = new Message({
+//                                receivers: chatId.details.receivers,
+//                                receiversNicks: chatId.details.receiversNicks,
+//                                messageContent: messageContent,
+//                                contractID: null,
+//                                chatID: chatId.details.chatID,
+//    							receiverName: chatId.details.receiverName,
+//    							receiverId: chatId.details.receiverId
+//    							
+//    							receivers: revs,
+//    							receiversNicks: chatId.details.receiversNicks,
+    							receiverName: chatName,
+    							receiverId: chatId,
+    	      					messageContent: messageContent,
+    	      					contractID : null
+//    	      					
+                            });
+                           /* console.log("add message");
+                            console.log(message);*/
+                            Oboe({
+                                url: RESTAPISERVER + "/api/messages/private",
+                                method: 'POST',
+                                body: message,
+                                withCredentials: true,
+                                headers: {'Auth-Token': $http.defaults.headers.common['Auth-Token']},
+                                start: function (stream) {
+                                    // handle to the stream
+                                    $scope.stream = stream;
+                                    $scope.status = 'started';
+
+                                },
+                                done: function (parsedJSON) {
+                                    $scope.status = 'done';
+
+                                }
+                            }).then(function () {
+                            }, function (error) {
+                                $scope.searchMessages = false;
+                            }, function (node) {
+                                if (node != null && node.length != 0) {
+                                    console.log(node);
+                                    $state.reload();
+                                    //refresh();$a
+                                    //$state.go('messages');
+                                    $scope.searchMessages = false;
+                                }
+                            });
+                        	
                         }
                     };
-
+                    
                     function refresh() { //Refresh request
                         var tmp = {};
                         var tmpContract = {};
 
 
-
-
                         $scope.chats = [];
-                        $scope.private = [];
+                        $scope.privateMessages = [];
                         $scope.msgsContract = [];
                        // console.log($scope.messages);
                         for (var i = 0; i < $scope.messages.length; i++) {
@@ -139,23 +194,30 @@
 
 
                             }else{
-                                var detailsPrivate = {};
-                                detailsPrivate['date'] = $scope.messages[i].sendingDate;
-                                detailsPrivate['content'] = $scope.messages[i].messageContent;
-                                detailsPrivate['id'] = $scope.messages[i].id;
-                                detailsPrivate['chatID'] = $scope.messages[i].chatID;
-                                detailsPrivate['receivers']= $scope.messages[i].receivers;
-                                detailsPrivate['receiversNicks'] = $scope.messages[i].receiversNicks;
-                              //  console.log($scope.messages[i]);
+//                                var detailsPrivate = {};
+//                                detailsPrivate['date'] = $scope.messages[i].sendingDate;
+//                                detailsPrivate['content'] = $scope.messages[i].messageContent;
+//                                detailsPrivate['id'] = $scope.messages[i].receiverId;
+//                                detailsPrivate['chatID'] = $scope.messages[i].chatID;
+//                                detailsPrivate['receiverName']= $scope.messages[i].receiverName;
+//                                detailsPrivate['receiverId']= $scope.messages[i].receiverId;
+//                                detailsPrivate['receiversNicks'] = $scope.messages[i].receiversNicks;
+//                                console.log($scope.messages[i]);
                                 //if($scope.messages[i].sender)
-                                tmp[$scope.messages[i].receiverName] = detailsPrivate;
-
-
+//                                tmp[$scope.messages[i].receiverName] = detailsPrivate;
+                                if($scope.messages[i].senderName != $scope.user.nick)
+        							{tmp[$scope.messages[i].senderName] = $scope.messages[i].senderId;}
+        						else 
+        							{
+        							tmp[$scope.messages[i].receiverName] = $scope.messages[i].receiverId;
+        							}
+        					
+//                                receiverName
 
                             }
                         }
                         for (var j in tmp) {
-                            $scope.private.push({name: j, details: tmp[j]});
+                            $scope.privateMessages.push({name: j, id: tmp[j]});
                         }
                         for (var j in tmpContract) {
                             $scope.msgsContract.push({name: j, details: tmpContract[j]});
@@ -197,10 +259,13 @@
                         }, function (node) {
                             if (node != null && node.length != 0) {
                                 for (var i = 0; i < node.length; i++) {
-
+//                                	alert(node.length);
+//                                	alert(node[i].contractID);
+//                                	alert(node[i].messageContent);
                                     if(node[i].contractID !== null){
                                     	$scope.messagesContract.push(node[i]);
                                     }else{
+//                                    	alert(node[i].messageContent);
                                         $scope.messagesPrivate.push(node[i]);
                                     }
                                     $scope.messages.push(node[i]);
@@ -283,63 +348,130 @@
                     var currentUser = User.get({
                         id: $scope.app.userid
                     });
-                    $scope.submit = function () {
-                        if (true) {
-                            $scope.errorUsername = false;
-                            $scope.errorFields = false;
-                            $scope.sendMessage = true;
-                            var ids = [];
-                            var nicks = [];
-                            angular.forEach($scope.tags,function(value,key){
-                                angular.forEach(value, function(value2,key2){
-                                    if(key2==="id"){
-                                        ids.push(value2);
-                                    }
-                                    if(key2==="nick"){
-                                        nicks.push(value2);
-                                    }
-                                });
-                            });
-                            ids.push($scope.app.userid);
-                            nicks.push(currentUser.nick);
-                            console.log($scope.messageContent);
-                            var message = new Message({
-                                receivers: ids,
-                                receiversNicks: nicks,
-                                messageContent: $scope.messageContent
-                            });
-
-                            Oboe({
-                                url: RESTAPISERVER + "/api/messages/",
-                                method: 'POST',
-                                body: message,
-                                withCredentials: true,
-                                headers: {'Auth-Token': $http.defaults.headers.common['Auth-Token']},
-                                start: function (stream) {
-                                    // handle to the stream
-                                    $scope.stream = stream;
-                                    $scope.status = 'started';
-                                    $scope.sendMessage = true;
-                                },
-                                done: function (parsedJSON) {
-                                    $scope.status = 'done';
-                                    $scope.sendMessage = false;
-                                }
-                            }).then(function () {
-                            }, function (error) {
-                                $scope.sendMessage = false;
-                            }, function (node) {
-                                if (node != null && node.length != 0) {
-                                    $scope.sendMessage = false;
-                                    console.log(node);
-                                    $state.go('messages');
-                                }
-                            });
-                        }
-                        else {
-                            $scope.errorFields = true;
-                        }
-                    };
+                    $scope.submit = function() {
+    					if($scope.messageContent && $scope.receiverName && $scope.receiverId){
+    						$scope.errorUsername = false;
+    						$scope.errorFields = false;
+    						$scope.sendMessage = true;
+    						var ids = [];
+                          var nicks = [];
+                          angular.forEach($scope.tags,function(value,key){
+                              angular.forEach(value, function(value2,key2){
+                                  if(key2==="id"){
+                                      ids.push(value2);
+                                  }
+                                  if(key2==="nick"){
+                                      nicks.push(value2);
+                                  }
+                              });
+                          });
+    						
+    						var message = new Message({
+    							receivers: ids,
+    							receiversNicks: nicks,
+    							receiverName: $scope.receiverName,
+    							receiverId: $scope.receiverId,
+    	      					messageContent: $scope.messageContent,
+    	      					contractID : null
+    						});
+    						
+    						Oboe({
+    		                        url: RESTAPISERVER + "/api/messages/private",
+    		                        method: 'POST',
+    		                        body : message,
+    		                        withCredentials: true,
+    		                        headers: {'Auth-Token' : $http.defaults.headers.common['Auth-Token']},
+    		                        start: function(stream) {
+    		                            // handle to the stream
+    		                            $scope.stream = stream;
+    		                            $scope.status = 'started';
+    		                            $scope.sendMessage = true;
+    		                        },
+    		                        done: function(parsedJSON) {
+    		                            $scope.status = 'done';
+    		                            $scope.sendMessage = false;
+    		                        }
+    		                    }).then(function() {
+    		                    }, function(error) {
+    		                    	$scope.sendMessage = false;
+    		                    }, function(node) {
+    		                        if (node != null && node.length != 0) {
+    		                        		$scope.sendMessage = false;
+    		                                console.log(node);
+    		                                $state.go('messages');
+    		                        }
+    		                    });
+    					}
+    					else {
+    						$scope.errorFields = true;
+    					}
+    				};
+//                    $scope.submit = function () {
+//                        if (true) {
+//                            $scope.errorUsername = false;
+//                            $scope.errorFields = false;
+//                            $scope.sendMessage = true;
+//                            var ids = [];
+//                            var nicks = [];
+//                            angular.forEach($scope.tags,function(value,key){
+//                                angular.forEach(value, function(value2,key2){
+//                                    if(key2==="id"){
+//                                        ids.push(value2);
+//                                    }
+//                                    if(key2==="nick"){
+//                                        nicks.push(value2);
+//                                    }
+//                                });
+//                            });
+//                            ids.push($scope.app.userid);
+//                            nicks.push(currentUser.nick);
+//                            console.log($scope.messageContent);
+//                            var message = new Message({
+////                                receivers: ids,
+////                                receiversNicks: nicks,
+////                                messageContent: $scope.messageContent
+//                            	
+//                            	
+//                            	receivers: ids,
+//                                receiversNicks: nicks,
+//                                messageContent: $scope.messageContent,
+//                                contractTitle: null,
+//                                contractID: null,
+//                                chatID: null
+//                            });
+//
+//                            Oboe({
+//                                url: RESTAPISERVER + "/api/messages/private",
+//                                method: 'POST',
+//                                body: message,
+//                                withCredentials: true,
+//                                headers: {'Auth-Token': $http.defaults.headers.common['Auth-Token']},
+//                                start: function (stream) {
+//                                    // handle to the stream
+//                                    $scope.stream = stream;
+//                                    $scope.status = 'started';
+//                                    $scope.sendMessage = true;
+//                                },
+//                                done: function (parsedJSON) {
+//                                    $scope.status = 'done';
+//                                    $scope.sendMessage = false;
+//                                }
+//                            }).then(function () {
+//                            }, function (error) {
+//                                $scope.sendMessage = false;
+//                            }, function (node) {
+//                                if (node != null && node.length != 0) {
+//                                    $scope.sendMessage = false;
+//                                    console.log(node);
+//                                    alert(message.contractID);
+//                                    $state.go('messages');
+//                                }
+//                            });
+//                        }
+//                        else {
+//                            $scope.errorFields = true;
+//                        }
+//                    };
 
 
 
