@@ -156,7 +156,10 @@
                     
                     function refresh() { //Refresh request
                         var tmp = {};
+                        var tmpdate = {};
                         var tmpContract = {};
+                        var tmpmsglast = {};
+
 
 
                         $scope.chats = [];
@@ -181,16 +184,25 @@
 
                             }else{
                             	
-                                if($scope.messages[i].senderName != $scope.user.nick)
-        							{tmp[$scope.messages[i].senderName] = $scope.messages[i].senderId;}
-        						else 
-        							{
-        							tmp[$scope.messages[i].receiverName] = $scope.messages[i].receiverId;
+                            	var detailsChat = {};
+                            	detailsChat['sendingDate'] = $scope.messages[i].sendingDate;
+                            	detailsChat['idC'] = $scope.messages[i].contractID;
+                            	detailsChat['id'] = $scope.messages[i].chatID;
+                            	detailsChat['messageContent'] = $scope.messages[i].messageContent;
+                            	detailsChat['receivers']= $scope.messages[i].receivers;
+                            	detailsChat['receiversNicks'] = $scope.messages[i].receiversNicks;
+                                detailsChat['contractTitle'] = $scope.messages[i].contractTitle;
+                                if($scope.messages[i].senderName != $scope.user.nick){
+                                	tmp[$scope.messages[i].senderName] = detailsChat;
+                                	
+        							}else{
+            							tmp[$scope.messages[i].receiverName] = detailsChat;
         							}
+                                
                             }
                         }
                         for (var j in tmp) {
-                            $scope.privateMessages.push({name: j, id: tmp[j]});
+                            $scope.privateMessages.push({name: j, detailsChat: tmp[j]});
                         }
                         for (var j in tmpContract) {
                             $scope.msgsContract.push({name: j, details: tmpContract[j]});
