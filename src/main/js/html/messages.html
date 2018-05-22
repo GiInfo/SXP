@@ -15,10 +15,11 @@
                     <!-- show resume of private messages -->
                     <div class="tab-content">
                         <div class="tab-pane fade in active" id="privateMessages" ng-show="privateIsClicked">
-                            <div class="list-group" ng-repeat="msgPrivate in privateMessages | orderBy : 'sendingDate'" ng-click="openMessage(msgPrivate.id,'privateMessages')">
+                            <div class="list-group" data-ng-repeat="msgPrivate in privateMessages | orderBy : '-detailsChat.sendingDate'" ng-click="openMessage(msgPrivate.detailsChat.id,'privateMessages')">
                                 <a  class="list-group-item">
-                                    <span class="name" style="min-width: 120px; display: inline-block;">{{msgPrivate.name}}</span> <span class=""></span>
-                                    <span class="text-muted" style="font-size: 11px; max-width: 200px; display: inline-block; overflow: hidden;">{{msgPrivate.messageContent}}</span> <span class="badge">{{msgPrivate.sendingDate}}</span> </a>
+                                    <span class="name" style="min-width: 120px; display: inline-block;">{{msgPrivate.name}}</span>
+                                    <span class="text-muted" style="font-size: 11px;">{{msgPrivate.detailsChat.messageContent}}</span> <span class="badge">{{msgPrivate.detailsChat.sendingDate}}</span>
+                            	</a>
                             </div>
                         </div>
 
@@ -35,8 +36,8 @@
                         </div>
 
                         <!-- Content of all private messages -->
-                        <div ng-repeat="msgPrivate in privateMessages" id="{{msgPrivate.id}}" class="tabcontent" ng-show="privateIsClicked">
-                            <button class="btn btn-link btn-lg linknodeco" ng-click="back('privateMessages',msgPrivate.id)">
+                        <div ng-repeat="msgPrivate in privateMessages" id="{{msgPrivate.detailsChat.id}}" class="tabcontent" ng-show="privateIsClicked">
+                            <button class="btn btn-link btn-lg linknodeco" ng-click="back('privateMessages',msgPrivate.detailsChat.id)">
                                 <span class="glyphicon glyphicon-chevron-left"></span> Back
                             </button>
                            <div ng-repeat="message in messagesPrivate | orderBy: 'sendingDate'">
@@ -49,7 +50,7 @@
                             <div class="input-group input-group-lg">
                                 <input type="text" class="form-control" ng-model="messageContent" placeholder="type your message here">
                                 <span class="input-group-btn">
-                                <button class="btn btn-default" type="button" ng-click="addMessage(msgPrivate.name,msgPrivate.id,messageContent)">Send</button>
+                                <button class="btn btn-default" type="button" ng-click="addMessage(msgPrivate.name,msgPrivate.details,messageContent)">Send</button>
                             </span>
                             </div>
                         </div>
