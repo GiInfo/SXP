@@ -29,7 +29,7 @@
 
 
     // 'contracts' state controller function
-    module.controller('viewContracts', function($http, $rootScope,$scope, $state,User,Contract) {
+    module.controller('viewContracts', function($http, $rootScope,$scope, $state,User,Contract,Oboe) {
         isUserConnected($http, $rootScope, $scope, $state, User);
 
         //TODO: do some of this with configHeader:
@@ -40,8 +40,39 @@
         $scope.app.configHeader({back: false, title: 'Contracts', contextButton: 'addContract'});
 
         $scope.contracts = [];
-        $scope.contracts = Contract.query(); //Fetch contracts, thanks to restApi.js
-        //The bindings with contracts.html will display them automatically
+        
+        $scope.searchMessages = true;
+
+        if ($scope.stream != null) {
+            $scope.stream.abort();
+        }
+        Oboe(
+            {
+                url: RESTAPISERVER + "/api/contracts/",
+                pattern: '!',
+                withCredentials: true,
+                headers: {'Auth-Token': $http.defaults.headers.common['Auth-Token']},
+                start: function (stream) {
+                    // handle to the stream
+                    $scope.stream = stream;
+                    $scope.status = 'started';
+                    $scope.searchMessages = true;
+                },
+                done: function (parsedJSON) {
+                    $scope.status = 'done';
+                    $scope.searchMessages = false;
+                }
+            }).then(function () {
+        }, function (error) {
+        }, function (node) {
+            if (node != null && node.length != 0) {
+                for (var i = 0; i < node.length; i++) {
+                        $scope.contracts.push(node[i]);
+                }
+            }
+        });
+        
+           //The bindings with contracts.html will display them automatically
         $scope.checkClass = function ($status) {
             switch ($status) {
                 case 'NOWHERE':
