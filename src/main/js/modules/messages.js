@@ -101,10 +101,11 @@
                                 $scope.searchMessages = false;
                             }, function (node) {
                                 if (node != null && node.length != 0) {
-                                    console.log(node);
-                                    $state.reload();
-                                    //refresh();
-                                    //$state.go('messages');
+                                    for (var i = 0; i < node.length; i++) {
+                                    	$scope.messagesContract.splice(0,i);
+                                        $scope.messages.splice(0,i);
+                                    }
+                                    loadNewMessages();
                                     $scope.searchMessages = false;
                                 }
                             });
@@ -112,8 +113,8 @@
                         	
                             $scope.searchMessages = true;
                             //Message is available thanks to restApi.js
-                            alert(chatId);
-                            alert(chatName);
+                            //alert(chatId);
+                            //alert(chatName);
                             var revs =[];
                             revs.push(chatId);
                             var message = new Message({
@@ -144,9 +145,12 @@
                             }, function (node) {
                                 if (node != null && node.length != 0) {
                                     console.log(node);
-                                    $state.reload();
-                                    //refresh();$a
-                                    //$state.go('messages');
+                                    //$state.reload();
+                                    for (var i = 0; i < node.length; i++) {
+                                    	$scope.messagesPrivate.splice(0,i);
+                                        $scope.messages.splice(0,i);
+                                    }
+                                    loadNewMessages();
                                     $scope.searchMessages = false;
                                 }
                             });
@@ -198,7 +202,6 @@
         							}else{
             							tmp[$scope.messages[i].receiverName] = detailsChat;
         							}
-                                
                             }
                         }
                         for (var j in tmp) {
@@ -207,10 +210,61 @@
                         for (var j in tmpContract) {
                             $scope.msgsContract.push({name: j, details: tmpContract[j]});
                         }
-                        //console.log($scope.private);
 
                     }
 
+                    function loadNewMessages() {
+                    	$scope.myNode ={};
+                        $scope.searchMessages = true;
+
+                        if ($scope.stream != null) {
+                            $scope.stream.abort();
+                        }
+                        Oboe(
+                            {
+                                url: RESTAPISERVER + "/api/messages/",
+                                pattern: '!',
+                                withCredentials: true,
+                                headers: {'Auth-Token': $http.defaults.headers.common['Auth-Token']},
+                                start: function (stream) {
+                                    // handle to the stream
+                                    $scope.stream = stream;
+                                    $scope.status = 'started';
+                                    $scope.searchMessages = true;
+                                },
+                                done: function (parsedJSON) {
+                                    $scope.status = 'done';
+                                    $scope.searchMessages = false;
+                                }
+                            }).then(function () {
+                        }, function (error) {
+                        }, function (node) {
+                            if (node != null && node.length != 0) {
+                            	 for (var i = 0; i < node.length; i++) {
+                                 	$scope.messagesContract.splice(0,i);
+                                     $scope.messagesContract.splice(0,i);
+                                     $scope.messagesPrivate.splice(0,i);
+                                     $scope.messages.splice(0,i);
+                                 }
+                            	$scope.myNode = node;
+//                            	alert("new message"+node.length);
+                                for (var i = 0; i < node.length; i++) {
+                                    if(node[i].contractID !== null){
+                                    	$scope.messagesContract.push(node[i]);
+                                    }else{
+                                        $scope.messagesPrivate.push(node[i]);
+                                    }
+                                   $scope.messages.push(node[i]);
+                                }
+                            }
+                            cleanArray($scope.messagesPrivate);
+                            cleanArray($scope.messages);
+                            //refresh();
+                        });
+                        $scope.messageContent = "";
+
+                    }
+                    
                     function loadMessages() {
 
                         $scope.messagesPrivate = [];
@@ -243,6 +297,7 @@
                         }, function (error) {
                         }, function (node) {
                             if (node != null && node.length != 0) {
+//                            	alert(node.length);
                                 for (var i = 0; i < node.length; i++) {
 //                                	alert(node.length);
 //                                	alert(node[i].contractID);
