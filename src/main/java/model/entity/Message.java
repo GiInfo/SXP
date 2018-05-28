@@ -21,8 +21,6 @@ import static javax.persistence.EnumType.STRING;
 @Entity
 public class Message {
 
-
-
     @XmlElement(name = "ContractTitle")
     private String ContractTitle;
 

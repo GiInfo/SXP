@@ -37,7 +37,7 @@
 			</div>
 			<div class="row">
 				<div class="col-sm-6" data-ng-show="!showParty">
-					<input type="text" class="form-control" placeholder="Choose a user" ng-model="form.addParty"
+					<input type="text" class="form-control" ng-required="isUser()" placeholder="Choose a user" ng-model="form.addParty"
 						   uib-typeahead="user for user in users | filter:$viewValue | limitTo:8">
 					<div ng-show="errorParty"><font color="red"><em>You must add a party</em></font></div>
 				</div>

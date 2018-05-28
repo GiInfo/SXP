@@ -72,7 +72,7 @@
             }
         });
         
-           //The bindings with contracts.html will display them automatically
+        //The bindings with contracts.html will display them automatically
         $scope.checkClass = function ($status) {
             switch ($status) {
                 case 'NOWHERE':
@@ -621,6 +621,12 @@
 
         /*******************************************************************/
 
+        $scope.isUser = function(){
+        	var rs = $scope.users.indexOf($scope.form.addParty);	
+        	if(rs == -1) return false;
+        	else return true;
+        }
+        
         /****** Submit button function ******/
         $scope.submit = function() {
 
